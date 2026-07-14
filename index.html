@@ -157,6 +157,16 @@ h1 em{font-style:normal;background:linear-gradient(125deg,var(--g),var(--g3));-w
 .btn-copy:hover{border-color:var(--g);color:var(--g)}
 .success-banner{background:rgba(0,200,150,.08);border:1px solid rgba(0,200,150,.24);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px;font-size:.88rem;color:var(--g)}
 
+.pasos-box{background:rgba(255,255,255,.016);border:1px solid var(--bd);border-radius:14px;padding:22px 24px;margin-bottom:24px}
+.pasos-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;color:var(--tx)}
+.pasos-sub{font-size:.82rem;color:var(--tx2);margin-bottom:16px;line-height:1.6;font-weight:300}
+.pasos-list{display:flex;flex-direction:column;gap:12px;list-style:none}
+.paso-item{display:flex;gap:12px;align-items:flex-start}
+.paso-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:rgba(0,200,150,.14);color:var(--g);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.paso-text{font-size:.85rem;color:var(--tx2);line-height:1.65;font-weight:300}
+.paso-text strong{color:var(--tx);font-weight:600}
+.pasos-nota{margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);font-size:.78rem;color:var(--tx3);line-height:1.6}
+
 /* EXTRA SECTIONS */
 section{padding:80px 5%}
 .sec-inner{max-width:1060px;margin:0 auto}
@@ -399,6 +409,7 @@ src="https://www.facebook.com/tr?id=950559588001288&ev=PageView&noscript=1"/></n
           <!-- DOCUMENT VIEWER -->
           <div class="doc-viewer hidden" id="doc-viewer">
             <div class="success-banner">✓ Pago confirmado — tus cartas están listas para descargar</div>
+            <div class="pasos-box" id="pasos-box"><!-- generado dinámicamente --></div>
             <div class="doc-tabs" id="doc-tabs"><!-- generado dinámicamente --></div>
             <div id="doc-sheets"><!-- generado dinámicamente --></div>
           </div>
@@ -502,6 +513,20 @@ const DOC_META = {
     ley:'C.G.P. Art. 599 · Ley 794/2003',
     desc:'Solicita el levantamiento del embargo sobre tus bienes cuando la obligación ya fue cancelada.',
   },
+};
+
+/* ══════════════════════════════════════════════════════
+   PRÓXIMOS PASOS — a dónde y cómo enviar cada carta
+   (el plazo y la instancia de escalamiento deben coincidir
+   con lo que la propia carta afirma en su texto)
+══════════════════════════════════════════════════════ */
+const PASOS_META = {
+  eliminacion:     { destino:'departamento de Cartera y Gestión de Cobro', plazo:15, escalar:'la Superintendencia de Industria y Comercio (SIC), por violación al derecho de Hábeas Data' },
+  actualizacion:   { destino:'departamento de Cartera / Gestión de Cobro', plazo:10, escalar:'la Superintendencia de Industria y Comercio (SIC) o la Superintendencia Financiera, según corresponda' },
+  habeas_data:     { destino:'entidad que reportó el dato', plazo:15, escalar:'la Superintendencia de Industria y Comercio (SIC), por violación al derecho de Hábeas Data' },
+  motivos_rechazo: { destino:'área de Crédito y Riesgo', plazo:15, escalar:'la Superintendencia Financiera de Colombia' },
+  levantamiento:   { destino:'departamento Jurídico / Cobranzas', plazo:10, escalar:'el juzgado que ordenó el embargo (consulta el radicado en la Rama Judicial) y, si aplica, la Superintendencia Financiera' },
+  negociacion:     { destino:'departamento de Cartera / Cobro', plazo:null, escalar:null },
 };
 
 /* ══════════════════════════════════════════════════════
@@ -1001,6 +1026,7 @@ function unlockDocs() {
       </div>`;
     sheetsEl.appendChild(sheet);
   });
+  renderPasosEnvio();
   document.getElementById('doc-viewer').classList.remove('hidden');
   document.getElementById('doc-viewer').scrollIntoView({behavior:'smooth'});
   // Pixel Purchase event
@@ -1021,6 +1047,34 @@ function unlockDocs() {
       </a>`;
     document.getElementById('doc-viewer').after(el);
   }
+}
+
+function renderPasosEnvio() {
+  const box = document.getElementById('pasos-box');
+  const entidad = S.ans.entidad || 'la entidad';
+
+  const notas = S.docs.map(id => {
+    const p = PASOS_META[id];
+    const d = DOC_META[id];
+    if (!p) return '';
+    if (p.plazo) {
+      return `<strong>${d.nombre}:</strong> dirígela al ${p.destino} de ${entidad}. Si no responden en ${p.plazo} días hábiles, el siguiente paso es escalar ante ${p.escalar}.`;
+    }
+    return `<strong>${d.nombre}:</strong> dirígela al ${p.destino} de ${entidad}. Es una propuesta voluntaria — no tiene un plazo legal de respuesta; si en 8-10 días no te contactan, dales seguimiento por teléfono.`;
+  }).filter(Boolean);
+
+  box.innerHTML = `
+    <div class="pasos-title">📬 Cómo enviar tu carta (para que realmente cuente)</div>
+    <p class="pasos-sub">Descargar el PDF es el primer paso. Esto es lo que falta para que le llegue a la entidad y empiece a correr el plazo legal de respuesta.</p>
+    <ol class="pasos-list">
+      <li class="paso-item"><span class="paso-num">1</span><span class="paso-text">Imprime el PDF y <strong>fírmalo a mano</strong> (o con firma digital si la vas a enviar solo por correo electrónico). Sin firma, la entidad puede rechazarla.</span></li>
+      <li class="paso-item"><span class="paso-num">2</span><span class="paso-text">Busca el formulario de <strong>PQR</strong> (Peticiones, Quejas y Reclamos) en la página web oficial de ${entidad} — casi todas las entidades en Colombia tienen uno y permite adjuntar el PDF directamente. Es el canal más rápido.</span></li>
+      <li class="paso-item"><span class="paso-num">3</span><span class="paso-text">Si no encuentras un PQR, envíala al <strong>correo de servicio al cliente</strong> de la entidad (está en su sitio web o en tu extracto/estado de cuenta), o llévala a una oficina física y pide que te sellen una copia como constancia de radicado.</span></li>
+      <li class="paso-item"><span class="paso-num">4</span><span class="paso-text"><strong>Guarda la prueba de envío</strong> — la respuesta automática del PQR, el correo enviado, o el radicado físico. Desde esa fecha empiezan a contar los días hábiles que tiene la entidad para responder.</span></li>
+      <li class="paso-item"><span class="paso-num">5</span><span class="paso-text">Si no respetan el plazo, el mismo PDF sirve como soporte para escalar tu reclamo. Según tu carta:</span></li>
+    </ol>
+    ${notas.length ? `<div class="pasos-nota">${notas.join('<br><br>')}</div>` : ''}
+  `;
 }
 
 /* ══════════════════════════════════════════════════════
