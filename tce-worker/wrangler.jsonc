@@ -1,0 +1,14 @@
+{
+  "name": "tce-worker",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-01",
+  "kv_namespaces": [
+    {
+      "binding": "PAGOS",
+      "id": "d0e80ccd2187417e98dec322cc0bd24a"
+    }
+  ],
+  "triggers": {
+    "crons": ["0 13 * * *"]
+  }
+}

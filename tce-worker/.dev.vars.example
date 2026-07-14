@@ -1,0 +1,4 @@
+EFIPAY_WEBHOOK_TOKEN=coloca-aqui-el-token-de-webhooks-de-tu-comercio-efipay
+BREVO_API_KEY=coloca-aqui-tu-api-key-de-brevo
+OWNER_EMAIL=tuemail@ejemplo.com
+SENDER_EMAIL=notificaciones@tudominio.com

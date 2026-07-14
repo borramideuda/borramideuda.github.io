@@ -1,0 +1,5 @@
+# Local Netlify folder
+.netlify
+
+# Wrangler local cache (contains Cloudflare account id/email)
+.wrangler
